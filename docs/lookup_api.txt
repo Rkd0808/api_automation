@@ -1,0 +1,335 @@
+LOOKUP API SPECIFICATION
+
+Base URL: /api/lookup
+
+ENDPOINTS:
+
+1. GET /vehicle-types
+Description: Get all vehicle types
+Authentication: Required (Bearer token)
+Request: None
+Response:
+{
+  "vehicleTypes": [
+    {
+      "id": "string",
+      "name": "string",
+      "category": "string",
+      "description": "string",
+      "isActive": "boolean"
+    }
+  ],
+  "totalCount": "number"
+}
+Status Codes:
+- 200: Success
+- 401: Unauthorized
+- 500: Server Error
+
+2. GET /vehicle-models
+Description: Get all vehicle models
+Authentication: Required (Bearer token)
+Query Parameters:
+- vehicleTypeId: string (optional)
+Response:
+{
+  "vehicleModels": [
+    {
+      "id": "string",
+      "name": "string",
+      "vehicleTypeId": "string",
+      "manufacturer": "string",
+      "year": "number",
+      "isActive": "boolean"
+    }
+  ],
+  "totalCount": "number"
+}
+Status Codes:
+- 200: Success
+- 401: Unauthorized
+- 500: Server Error
+
+3. GET /locations
+Description: Get all locations (branches, hubs, warehouses)
+Authentication: Required (Bearer token)
+Query Parameters:
+- type: string (optional - branch/hub/warehouse)
+- isActive: boolean (optional)
+Response:
+{
+  "locations": [
+    {
+      "id": "string",
+      "name": "string",
+      "type": "string",
+      "code": "string",
+      "address": "string",
+      "city": "string",
+      "state": "string",
+      "pincode": "string",
+      "isActive": "boolean"
+    }
+  ],
+  "totalCount": "number"
+}
+Status Codes:
+- 200: Success
+- 401: Unauthorized
+- 500: Server Error
+
+4. GET /product-categories
+Description: Get all product categories
+Authentication: Required (Bearer token)
+Request: None
+Response:
+{
+  "categories": [
+    {
+      "id": "string",
+      "name": "string",
+      "parentCategoryId": "string",
+      "level": "number",
+      "isActive": "boolean"
+    }
+  ],
+  "totalCount": "number"
+}
+Status Codes:
+- 200: Success
+- 401: Unauthorized
+- 500: Server Error
+
+5. GET /units
+Description: Get all measurement units
+Authentication: Required (Bearer token)
+Request: None
+Response:
+{
+  "units": [
+    {
+      "id": "string",
+      "name": "string",
+      "symbol": "string",
+      "type": "string",
+      "conversionFactor": "number",
+      "isActive": "boolean"
+    }
+  ],
+  "totalCount": "number"
+}
+Status Codes:
+- 200: Success
+- 401: Unauthorized
+- 500: Server Error
+
+6. GET /currencies
+Description: Get all supported currencies
+Authentication: Required (Bearer token)
+Request: None
+Response:
+{
+  "currencies": [
+    {
+      "id": "string",
+      "code": "string",
+      "name": "string",
+      "symbol": "string",
+      "exchangeRate": "number",
+      "isActive": "boolean"
+    }
+  ],
+  "totalCount": "number"
+}
+Status Codes:
+- 200: Success
+- 401: Unauthorized
+- 500: Server Error
+
+7. GET /document-types
+Description: Get all document types
+Authentication: Required (Bearer token)
+Request: None
+Response:
+{
+  "documentTypes": [
+    {
+      "id": "string",
+      "name": "string",
+      "category": "string",
+      "isRequired": "boolean",
+      "validityPeriod": "number",
+      "isActive": "boolean"
+    }
+  ],
+  "totalCount": "number"
+}
+Status Codes:
+- 200: Success
+- 401: Unauthorized
+- 500: Server Error
+
+8. GET /status-codes
+Description: Get all status codes for various entities
+Authentication: Required (Bearer token)
+Query Parameters:
+- entity: string (required - order/vehicle/shipment/etc)
+Response:
+{
+  "statusCodes": [
+    {
+      "id": "string",
+      "code": "string",
+      "name": "string",
+      "description": "string",
+      "entity": "string",
+      "sequence": "number",
+      "isActive": "boolean"
+    }
+  ],
+  "totalCount": "number"
+}
+Status Codes:
+- 200: Success
+- 400: Bad Request (missing entity parameter)
+- 401: Unauthorized
+- 500: Server Error
+
+9. GET /user-roles
+Description: Get all user roles
+Authentication: Required (Bearer token)
+Request: None
+Response:
+{
+  "roles": [
+    {
+      "id": "string",
+      "name": "string",
+      "description": "string",
+      "permissions": ["string"],
+      "isActive": "boolean"
+    }
+  ],
+  "totalCount": "number"
+}
+Status Codes:
+- 200: Success
+- 401: Unauthorized
+- 500: Server Error
+
+10. GET /payment-methods
+Description: Get all payment methods
+Authentication: Required (Bearer token)
+Request: None
+Response:
+{
+  "paymentMethods": [
+    {
+      "id": "string",
+      "name": "string",
+      "type": "string",
+      "isOnline": "boolean",
+      "processingFee": "number",
+      "isActive": "boolean"
+    }
+  ],
+  "totalCount": "number"
+}
+Status Codes:
+- 200: Success
+- 401: Unauthorized
+- 500: Server Error
+
+11. GET /countries
+Description: Get all countries
+Authentication: Required (Bearer token)
+Request: None
+Response:
+{
+  "countries": [
+    {
+      "id": "string",
+      "name": "string",
+      "code": "string",
+      "dialCode": "string",
+      "isActive": "boolean"
+    }
+  ],
+  "totalCount": "number"
+}
+Status Codes:
+- 200: Success
+- 401: Unauthorized
+- 500: Server Error
+
+12. GET /states
+Description: Get states by country
+Authentication: Required (Bearer token)
+Query Parameters:
+- countryId: string (required)
+Response:
+{
+  "states": [
+    {
+      "id": "string",
+      "name": "string",
+      "countryId": "string",
+      "code": "string",
+      "isActive": "boolean"
+    }
+  ],
+  "totalCount": "number"
+}
+Status Codes:
+- 200: Success
+- 400: Bad Request (missing countryId)
+- 401: Unauthorized
+- 500: Server Error
+
+13. GET /cities
+Description: Get cities by state
+Authentication: Required (Bearer token)
+Query Parameters:
+- stateId: string (required)
+Response:
+{
+  "cities": [
+    {
+      "id": "string",
+      "name": "string",
+      "stateId": "string",
+      "pincode": "string",
+      "isActive": "boolean"
+    }
+  ],
+  "totalCount": "number"
+}
+Status Codes:
+- 200: Success
+- 400: Bad Request (missing stateId)
+- 401: Unauthorized
+- 500: Server Error
+
+TEST SCENARIOS:
+
+- Positive: Get all vehicle types
+- Positive: Get vehicle models filtered by vehicle type
+- Positive: Get locations filtered by type (branch)
+- Positive: Get status codes for specific entity (order)
+- Positive: Get states by country ID
+- Positive: Get cities by state ID
+- Negative: Get status codes without entity parameter (expect 400)
+- Negative: Get states without countryId (expect 400)
+- Negative: Get cities without stateId (expect 400)
+- Negative: Access lookup without authentication (expect 401)
+- Edge Case: Get vehicle models with non-existent vehicleTypeId (expect empty list)
+- Edge Case: Get locations with invalid type filter (expect empty list)
+- Edge Case: Get cities for state with no cities defined (expect empty list)
+
+CHAINING:
+- Extract vehicleTypeId from vehicle types response for vehicle models query
+- Extract countryId from countries response for states query
+- Extract stateId from states response for cities query
+- Extract locationId from locations response for branch/hub specific operations
+- Extract categoryId from product categories for inventory operations
+- Extract roleId from user roles for user management operations
