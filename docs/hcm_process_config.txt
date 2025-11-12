@@ -1,0 +1,110 @@
+API SPECIFICATION: HCM Process Config API
+========================================
+
+BASE PATH: /v1/hub/configurations/hcm-process-config
+
+DESCRIPTION:
+The HCM Process Config API manages process configuration settings including vehicle conditions, cut-off thresholds, and basic HCM process configurations.
+
+ENDPOINTS:
+
+1. GET /v1/hub/configurations/hcm-process-config/vehicle-conditions
+   Description: Get all vehicle condition configurations
+   Authentication: Required (Bearer Token)
+   Response: Array of vehicle condition configs
+   Response Fields:
+   - conditionId (string): Unique condition identifier
+   - conditionName (string): Name of condition
+   - criteria (object): Condition criteria
+   - threshold (number): Threshold value
+   - status (string): Status
+
+2. POST /v1/hub/configurations/hcm-process-config/vehicle-conditions
+   Description: Create new vehicle condition configuration
+   Authentication: Required (Bearer Token)
+   Request Body:
+   {
+     "conditionName": "string",
+     "criteria": {
+       "type": "string",
+       "value": "string"
+     },
+     "threshold": 0
+   }
+   Status Codes:
+   - 201: Created successfully
+   - 400: Invalid data
+
+3. PUT /v1/hub/configurations/hcm-process-config/vehicle-conditions/{conditionId}
+   Description: Update vehicle condition
+   Authentication: Required (Bearer Token)
+   Path Parameters:
+   - conditionId (string, required): Condition identifier
+
+4. DELETE /v1/hub/configurations/hcm-process-config/vehicle-conditions/{conditionId}
+   Description: Delete vehicle condition
+   Authentication: Required (Bearer Token)
+
+5. GET /v1/hub/configurations/hcm-process-config/cutoff-thresholds
+   Description: Get cut-off threshold configurations
+   Authentication: Required (Bearer Token)
+   Response: Array of threshold configs
+
+6. POST /v1/hub/configurations/hcm-process-config/cutoff-thresholds
+   Description: Create cut-off threshold
+   Authentication: Required (Bearer Token)
+   Request Body:
+   {
+     "thresholdType": "TIME/WEIGHT/VOLUME",
+     "value": 0,
+     "unit": "string",
+     "applicableFor": "string"
+   }
+
+7. PUT /v1/hub/configurations/hcm-process-config/cutoff-thresholds/{thresholdId}
+   Description: Update cut-off threshold
+   Authentication: Required (Bearer Token)
+
+8. GET /v1/hub/configurations/hcm-process-config/basic-configs
+   Description: Get basic HCM process configurations
+   Authentication: Required (Bearer Token)
+   Response: Array of basic configs
+
+9. POST /v1/hub/configurations/hcm-process-config/basic-configs
+   Description: Create basic configuration
+   Authentication: Required (Bearer Token)
+   Request Body:
+   {
+     "configKey": "string",
+     "configValue": "string",
+     "configType": "string",
+     "description": "string"
+   }
+
+10. PUT /v1/hub/configurations/hcm-process-config/basic-configs/{configId}
+    Description: Update basic configuration
+    Authentication: Required (Bearer Token)
+
+11. DELETE /v1/hub/configurations/hcm-process-config/basic-configs/{configId}
+    Description: Delete basic configuration
+    Authentication: Required (Bearer Token)
+
+TEST SCENARIOS:
+- Positive: Get all vehicle conditions
+- Positive: Create vehicle condition with valid criteria
+- Positive: Get cut-off thresholds
+- Positive: Create threshold with valid type
+- Positive: Create basic HCM configuration
+- Negative: Create vehicle condition with invalid criteria (expect 400)
+- Negative: Update non-existent condition (expect 404)
+- Negative: Create threshold with negative value (expect 400)
+- Negative: Delete non-existent config (expect 404)
+- Edge Case: Create threshold with zero value
+- Edge Case: Update config with special characters
+- Edge Case: Create duplicate config key
+
+CHAINING:
+- Extract conditionId for updates/deletes
+- Extract thresholdId for threshold operations
+- Extract configId for basic config operations
+- Use branchId from Branch API in applicable configs
