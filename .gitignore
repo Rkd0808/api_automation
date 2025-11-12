@@ -1,0 +1,46 @@
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Test results
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Generated tests
+generated-tests/*.spec.ts
+generated-tests/*.spec.js
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
+dist/
+build/
+out/
+
+# TypeScript
+*.tsbuildinfo
+
+# Allure
+allure-results/
+allure-report/
