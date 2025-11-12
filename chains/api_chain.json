@@ -1,0 +1,12 @@
+{
+  "branch": {
+    "next": "hcm_operations",
+    "extract": ["branchId"],
+    "inject_into": "hcm_operations.branchId"
+  },
+  "hcm_operations": {
+    "next": "inventory",
+    "extract": ["operationId"],
+    "inject_into": "inventory.operationId"
+  }
+}
