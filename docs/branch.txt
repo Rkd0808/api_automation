@@ -1,0 +1,113 @@
+API SPECIFICATION: Branch API
+========================================
+
+BASE PATH: /v1/hub/configurations/branches
+
+DESCRIPTION:
+The Branch API provides endpoints to manage hub branch configurations including branch details, pincode mappings, master slabs, and branch types.
+
+ENDPOINTS:
+
+1. GET /v1/hub/configurations/branches
+   Description: Get all branches
+   Authentication: Required (Bearer Token)
+   Request Parameters: None
+   Response: Array of branch objects
+   Response Fields:
+   - branchId (string): Unique identifier for the branch
+   - branchName (string): Name of the branch
+   - branchCode (string): Branch code
+   - status (string): Active/Inactive status
+   - createdAt (string): Creation timestamp
+   - updatedAt (string): Last update timestamp
+
+2. GET /v1/hub/configurations/branches/{branchId}
+   Description: Get branch by ID
+   Authentication: Required (Bearer Token)
+   Path Parameters:
+   - branchId (string, required): Branch identifier
+   Response: Single branch object with all details
+   Error Responses:
+   - 404: Branch not found
+   - 401: Unauthorized
+
+3. GET /v1/hub/configurations/branches/search/{branchName}
+   Description: Search branches by name
+   Authentication: Required (Bearer Token)
+   Path Parameters:
+   - branchName (string, required): Branch name to search
+   Response: Array of matching branch objects
+   
+4. POST /v1/hub/configurations/branches
+   Description: Create new branch
+   Authentication: Required (Bearer Token)
+   Request Body:
+   {
+     "branchName": "string",
+     "branchCode": "string",
+     "status": "ACTIVE"
+   }
+   Response: Created branch object with branchId
+   Status Codes:
+   - 201: Branch created successfully
+   - 400: Invalid request data
+   - 409: Branch already exists
+
+5. PUT /v1/hub/configurations/branches/{branchId}
+   Description: Update branch details
+   Authentication: Required (Bearer Token)
+   Path Parameters:
+   - branchId (string, required): Branch identifier
+   Request Body: Partial branch object to update
+   Response: Updated branch object
+
+6. DELETE /v1/hub/configurations/branches/{branchId}
+   Description: Delete branch
+   Authentication: Required (Bearer Token)
+   Path Parameters:
+   - branchId (string, required): Branch identifier
+   Response: Success message
+   Status Codes:
+   - 204: Branch deleted successfully
+   - 404: Branch not found
+
+7. GET /v1/hub/configurations/branches/pincode-mapping
+   Description: Get pincode to branch mappings
+   Authentication: Required (Bearer Token)
+   Response: Array of pincode mappings
+
+8. POST /v1/hub/configurations/branches/pincode-mapping
+   Description: Create pincode to branch mapping
+   Authentication: Required (Bearer Token)
+   Request Body:
+   {
+     "pincode": "string",
+     "branchId": "string"
+   }
+
+9. GET /v1/hub/configurations/branches/master-slabs
+   Description: Get master slabs configuration
+   Authentication: Required (Bearer Token)
+   Response: Array of slab configurations
+
+10. GET /v1/hub/configurations/branches/types
+    Description: Get all branch types
+    Authentication: Required (Bearer Token)
+    Response: Array of branch type definitions
+
+TEST SCENARIOS:
+- Positive: Fetch all branches successfully
+- Positive: Get branch by valid ID
+- Positive: Search branches by partial name
+- Positive: Create new branch with valid data
+- Negative: Get branch with invalid ID (expect 404)
+- Negative: Create branch without required fields (expect 400)
+- Negative: Create duplicate branch (expect 409)
+- Edge Case: Search with special characters
+- Edge Case: Update non-existent branch
+- Edge Case: Delete already deleted branch
+
+CHAINING:
+- Extract branchId from create/get response
+- Use branchId in subsequent update/delete operations
+- Use branchId for pincode mapping creation
