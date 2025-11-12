@@ -1,0 +1,124 @@
+API SPECIFICATION: HCM Operations API
+========================================
+
+BASE PATH: /v1/hub/configurations/hcm-operations
+
+DESCRIPTION:
+The HCM Operations API manages hub configuration management operations including stock transfers, roles, general configurations, and cross-docking operations.
+
+ENDPOINTS:
+
+1. GET /v1/hub/configurations/hcm-operations/stock-transfer
+   Description: Get all stock transfer configurations
+   Authentication: Required (Bearer Token)
+   Response: Array of stock transfer configurations
+   Response Fields:
+   - operationId (string): Unique operation identifier
+   - branchId (string): Associated branch ID
+   - transferType (string): Type of stock transfer
+   - status (string): Operation status
+   - createdAt (string): Creation timestamp
+
+2. POST /v1/hub/configurations/hcm-operations/stock-transfer
+   Description: Create new stock transfer configuration
+   Authentication: Required (Bearer Token)
+   Request Body:
+   {
+     "branchId": "string",
+     "transferType": "INBOUND/OUTBOUND",
+     "quantity": 0,
+     "status": "PENDING"
+   }
+   Response: Created operation with operationId
+   Status Codes:
+   - 201: Created successfully
+   - 400: Invalid request
+
+3. GET /v1/hub/configurations/hcm-operations/stock-take
+   Description: Get stock take configurations
+   Authentication: Required (Bearer Token)
+   Response: Array of stock take records
+
+4. POST /v1/hub/configurations/hcm-operations/stock-take
+   Description: Create stock take entry
+   Authentication: Required (Bearer Token)
+   Request Body:
+   {
+     "branchId": "string",
+     "items": [
+       {
+         "itemId": "string",
+         "quantity": 0
+       }
+     ]
+   }
+
+5. GET /v1/hub/configurations/hcm-operations/roles
+   Description: Get all HCM roles
+   Authentication: Required (Bearer Token)
+   Response: Array of role definitions
+
+6. POST /v1/hub/configurations/hcm-operations/roles
+   Description: Create new HCM role
+   Authentication: Required (Bearer Token)
+   Request Body:
+   {
+     "roleName": "string",
+     "permissions": ["string"],
+     "description": "string"
+   }
+
+7. PUT /v1/hub/configurations/hcm-operations/roles/{roleId}
+   Description: Update role configuration
+   Authentication: Required (Bearer Token)
+   Path Parameters:
+   - roleId (string, required): Role identifier
+
+8. GET /v1/hub/configurations/hcm-operations/general-config
+   Description: Get general HCM configurations
+   Authentication: Required (Bearer Token)
+   Response: General configuration object
+
+9. PUT /v1/hub/configurations/hcm-operations/general-config
+   Description: Update general configurations
+   Authentication: Required (Bearer Token)
+   Request Body: Configuration object
+
+10. GET /v1/hub/configurations/hcm-operations/cross-docking
+    Description: Get cross-docking configurations
+    Authentication: Required (Bearer Token)
+    Response: Array of cross-docking configs
+
+11. POST /v1/hub/configurations/hcm-operations/cross-docking
+    Description: Create cross-docking configuration
+    Authentication: Required (Bearer Token)
+    Request Body:
+    {
+      "branchId": "string",
+      "dockType": "string",
+      "capacity": 0
+    }
+
+12. DELETE /v1/hub/configurations/hcm-operations/cross-docking/{dockId}
+    Description: Delete cross-docking configuration
+    Authentication: Required (Bearer Token)
+    Path Parameters:
+    - dockId (string, required): Dock identifier
+
+TEST SCENARIOS:
+- Positive: Create stock transfer with valid data
+- Positive: Get all HCM roles
+- Positive: Update general configuration
+- Positive: Create cross-docking configuration
+- Negative: Create stock transfer without branchId (expect 400)
+- Negative: Update non-existent role (expect 404)
+- Negative: Delete non-existent cross-dock (expect 404)
+- Edge Case: Create stock transfer with negative quantity
+- Edge Case: Update role with invalid permissions
+- Edge Case: Get cross-docking for inactive branch
+
+CHAINING:
+- Extract operationId from stock transfer response
+- Use branchId from Branch API in stock operations
+- Extract roleId for role update operations
+- Use dockId for cross-docking updates/deletes
