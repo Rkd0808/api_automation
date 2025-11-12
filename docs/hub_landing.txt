@@ -1,0 +1,147 @@
+API SPECIFICATION: Hub Landing & Layout API
+========================================
+
+BASE PATH: /v1/hub/configurations/hub-landing
+
+DESCRIPTION:
+The Hub Landing & Layout API manages hub landing configurations including basic configs, version data, gates, buildings, bays, and office layouts.
+
+ENDPOINTS:
+
+1. GET /v1/hub/configurations/hub-landing/basic-config
+   Description: Get basic hub configuration
+   Authentication: Required (Bearer Token)
+   Response: Basic configuration object
+   Response Fields:
+   - configId (string): Configuration identifier
+   - hubId (string): Hub identifier
+   - hubName (string): Hub name
+   - capacity (number): Hub capacity
+   - operationalHours (object): Operating hours
+
+2. PUT /v1/hub/configurations/hub-landing/basic-config
+   Description: Update basic hub configuration
+   Authentication: Required (Bearer Token)
+   Request Body:
+   {
+     "hubName": "string",
+     "capacity": 0,
+     "operationalHours": {
+       "start": "HH:MM",
+       "end": "HH:MM"
+     }
+   }
+
+3. GET /v1/hub/configurations/hub-landing/version/{version}
+   Description: Get hub configuration for specific version
+   Authentication: Required (Bearer Token)
+   Path Parameters:
+   - version (string, required): Version identifier
+   Response: Version-specific configuration
+
+4. GET /v1/hub/configurations/hub-landing/gates
+   Description: Get all gate configurations
+   Authentication: Required (Bearer Token)
+   Response: Array of gate configurations
+   Response Fields:
+   - gateId (string): Gate identifier
+   - gateName (string): Gate name
+   - gateType (string): ENTRY/EXIT/BOTH
+   - status (string): Status
+
+5. POST /v1/hub/configurations/hub-landing/gates
+   Description: Create new gate
+   Authentication: Required (Bearer Token)
+   Request Body:
+   {
+     "gateName": "string",
+     "gateType": "ENTRY/EXIT/BOTH",
+     "capacity": 0
+   }
+   Status Codes:
+   - 201: Gate created
+   - 400: Invalid data
+
+6. PUT /v1/hub/configurations/hub-landing/gates/{gateId}
+   Description: Update gate configuration
+   Authentication: Required (Bearer Token)
+   Path Parameters:
+   - gateId (string, required): Gate identifier
+
+7. DELETE /v1/hub/configurations/hub-landing/gates/{gateId}
+   Description: Delete gate
+   Authentication: Required (Bearer Token)
+   Path Parameters:
+   - gateId (string, required): Gate identifier
+
+8. GET /v1/hub/configurations/hub-landing/buildings
+   Description: Get all building configurations
+   Authentication: Required (Bearer Token)
+   Response: Array of buildings
+
+9. POST /v1/hub/configurations/hub-landing/buildings
+   Description: Add new building
+   Authentication: Required (Bearer Token)
+   Request Body:
+   {
+     "buildingName": "string",
+     "buildingType": "WAREHOUSE/OFFICE/MIXED",
+     "floors": 0,
+     "area": 0
+   }
+
+10. GET /v1/hub/configurations/hub-landing/bays
+    Description: Get all bay configurations
+    Authentication: Required (Bearer Token)
+    Response: Array of loading/unloading bays
+
+11. POST /v1/hub/configurations/hub-landing/bays
+    Description: Create new bay
+    Authentication: Required (Bearer Token)
+    Request Body:
+    {
+      "bayNumber": "string",
+      "bayType": "LOADING/UNLOADING",
+      "capacity": 0
+    }
+
+12. PUT /v1/hub/configurations/hub-landing/bays/{bayId}
+    Description: Update bay configuration
+    Authentication: Required (Bearer Token)
+
+13. GET /v1/hub/configurations/hub-landing/offices
+    Description: Get office layout configurations
+    Authentication: Required (Bearer Token)
+    Response: Array of office configs
+
+14. POST /v1/hub/configurations/hub-landing/offices
+    Description: Add office configuration
+    Authentication: Required (Bearer Token)
+    Request Body:
+    {
+      "officeName": "string",
+      "floor": 0,
+      "capacity": 0,
+      "facilities": ["string"]
+    }
+
+TEST SCENARIOS:
+- Positive: Get basic hub configuration
+- Positive: Get configuration by version
+- Positive: Create new gate with valid data
+- Positive: Create building configuration
+- Positive: Add loading bay
+- Positive: Configure office layout
+- Negative: Update basic config with invalid hours (expect 400)
+- Negative: Get non-existent version (expect 404)
+- Negative: Create gate without name (expect 400)
+- Negative: Delete non-existent gate (expect 404)
+- Edge Case: Create gate with zero capacity
+- Edge Case: Update bay with invalid type
+- Edge Case: Get version with special characters
+
+CHAINING:
+- Extract gateId for update/delete operations
+- Extract buildingId for building updates
+- Extract bayId for bay configuration updates
+- Use hubId in related API calls
