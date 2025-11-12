@@ -1,0 +1,329 @@
+HUB FEATURES API SPECIFICATION
+
+Base URL: /api/hub-features
+
+ENDPOINTS:
+
+1. GET /weighbridge
+Description: Get all weighbridge configurations
+Authentication: Required (Bearer token)
+Request: None
+Response:
+{
+  "weighbridges": [
+    {
+      "id": "string",
+      "name": "string",
+      "location": "string",
+      "capacity": "number",
+      "unit": "string",
+      "isActive": "boolean",
+      "calibrationDate": "date",
+      "nextCalibrationDate": "date"
+    }
+  ],
+  "totalCount": "number"
+}
+Status Codes:
+- 200: Success
+- 401: Unauthorized
+- 500: Server Error
+
+2. POST /weighbridge
+Description: Create new weighbridge configuration
+Authentication: Required (Bearer token)
+Request:
+{
+  "name": "string (required)",
+  "location": "string (required)",
+  "capacity": "number (required)",
+  "unit": "string (required)",
+  "isActive": "boolean",
+  "calibrationDate": "date (required)"
+}
+Response:
+{
+  "id": "string",
+  "name": "string",
+  "location": "string",
+  "capacity": "number",
+  "unit": "string",
+  "isActive": "boolean",
+  "calibrationDate": "date",
+  "nextCalibrationDate": "date",
+  "createdAt": "timestamp"
+}
+Status Codes:
+- 201: Created
+- 400: Bad Request
+- 401: Unauthorized
+- 500: Server Error
+
+3. GET /weighbridge/{id}
+Description: Get weighbridge by ID
+Authentication: Required (Bearer token)
+Path Parameters:
+- id: string (required)
+Response:
+{
+  "id": "string",
+  "name": "string",
+  "location": "string",
+  "capacity": "number",
+  "unit": "string",
+  "isActive": "boolean",
+  "calibrationDate": "date",
+  "nextCalibrationDate": "date",
+  "lastWeighingDate": "date",
+  "totalWeighings": "number"
+}
+Status Codes:
+- 200: Success
+- 401: Unauthorized
+- 404: Not Found
+- 500: Server Error
+
+4. PUT /weighbridge/{id}
+Description: Update weighbridge configuration
+Authentication: Required (Bearer token)
+Path Parameters:
+- id: string (required)
+Request:
+{
+  "name": "string",
+  "location": "string",
+  "capacity": "number",
+  "unit": "string",
+  "isActive": "boolean",
+  "calibrationDate": "date"
+}
+Response:
+{
+  "id": "string",
+  "name": "string",
+  "location": "string",
+  "capacity": "number",
+  "unit": "string",
+  "isActive": "boolean",
+  "calibrationDate": "date",
+  "nextCalibrationDate": "date",
+  "updatedAt": "timestamp"
+}
+Status Codes:
+- 200: Success
+- 400: Bad Request
+- 401: Unauthorized
+- 404: Not Found
+- 500: Server Error
+
+5. DELETE /weighbridge/{id}
+Description: Delete weighbridge configuration
+Authentication: Required (Bearer token)
+Path Parameters:
+- id: string (required)
+Response:
+{
+  "message": "Weighbridge deleted successfully",
+  "deletedId": "string"
+}
+Status Codes:
+- 200: Success
+- 401: Unauthorized
+- 404: Not Found
+- 409: Conflict (if weighbridge is in use)
+- 500: Server Error
+
+6. GET /facilities
+Description: Get all facility configurations
+Authentication: Required (Bearer token)
+Request: None
+Response:
+{
+  "facilities": [
+    {
+      "id": "string",
+      "name": "string",
+      "type": "string",
+      "location": "string",
+      "capacity": "number",
+      "isOperational": "boolean",
+      "operatingHours": "object"
+    }
+  ],
+  "totalCount": "number"
+}
+Status Codes:
+- 200: Success
+- 401: Unauthorized
+- 500: Server Error
+
+7. POST /facilities
+Description: Create new facility
+Authentication: Required (Bearer token)
+Request:
+{
+  "name": "string (required)",
+  "type": "string (required)",
+  "location": "string (required)",
+  "capacity": "number",
+  "isOperational": "boolean",
+  "operatingHours": {
+    "start": "time",
+    "end": "time"
+  }
+}
+Response:
+{
+  "id": "string",
+  "name": "string",
+  "type": "string",
+  "location": "string",
+  "capacity": "number",
+  "isOperational": "boolean",
+  "operatingHours": "object",
+  "createdAt": "timestamp"
+}
+Status Codes:
+- 201: Created
+- 400: Bad Request
+- 401: Unauthorized
+- 500: Server Error
+
+8. GET /facilities/{id}
+Description: Get facility by ID
+Authentication: Required (Bearer token)
+Path Parameters:
+- id: string (required)
+Response:
+{
+  "id": "string",
+  "name": "string",
+  "type": "string",
+  "location": "string",
+  "capacity": "number",
+  "isOperational": "boolean",
+  "operatingHours": "object",
+  "utilization": "number",
+  "lastMaintenanceDate": "date"
+}
+Status Codes:
+- 200: Success
+- 401: Unauthorized
+- 404: Not Found
+- 500: Server Error
+
+9. PUT /facilities/{id}
+Description: Update facility configuration
+Authentication: Required (Bearer token)
+Path Parameters:
+- id: string (required)
+Request:
+{
+  "name": "string",
+  "type": "string",
+  "location": "string",
+  "capacity": "number",
+  "isOperational": "boolean",
+  "operatingHours": {
+    "start": "time",
+    "end": "time"
+  }
+}
+Response:
+{
+  "id": "string",
+  "name": "string",
+  "type": "string",
+  "location": "string",
+  "capacity": "number",
+  "isOperational": "boolean",
+  "operatingHours": "object",
+  "updatedAt": "timestamp"
+}
+Status Codes:
+- 200: Success
+- 400: Bad Request
+- 401: Unauthorized
+- 404: Not Found
+- 500: Server Error
+
+10. DELETE /facilities/{id}
+Description: Delete facility
+Authentication: Required (Bearer token)
+Path Parameters:
+- id: string (required)
+Response:
+{
+  "message": "Facility deleted successfully",
+  "deletedId": "string"
+}
+Status Codes:
+- 200: Success
+- 401: Unauthorized
+- 404: Not Found
+- 409: Conflict (if facility is in use)
+- 500: Server Error
+
+11. GET /features/enabled
+Description: Get all enabled hub features
+Authentication: Required (Bearer token)
+Request: None
+Response:
+{
+  "features": [
+    {
+      "featureId": "string",
+      "featureName": "string",
+      "isEnabled": "boolean",
+      "enabledDate": "date",
+      "configuration": "object"
+    }
+  ]
+}
+Status Codes:
+- 200: Success
+- 401: Unauthorized
+- 500: Server Error
+
+12. POST /features/toggle
+Description: Toggle feature on/off
+Authentication: Required (Bearer token)
+Request:
+{
+  "featureId": "string (required)",
+  "isEnabled": "boolean (required)"
+}
+Response:
+{
+  "featureId": "string",
+  "featureName": "string",
+  "isEnabled": "boolean",
+  "updatedAt": "timestamp"
+}
+Status Codes:
+- 200: Success
+- 400: Bad Request
+- 401: Unauthorized
+- 404: Feature Not Found
+- 500: Server Error
+
+TEST SCENARIOS:
+
+- Positive: Get all weighbridge configurations
+- Positive: Create weighbridge with valid data
+- Positive: Update weighbridge configuration
+- Positive: Get all facilities
+- Positive: Create facility with valid data
+- Positive: Toggle feature on/off
+- Negative: Create weighbridge with missing required fields (expect 400)
+- Negative: Update non-existent weighbridge (expect 404)
+- Negative: Delete weighbridge that is in use (expect 409)
+- Negative: Create facility without authentication (expect 401)
+- Edge Case: Create weighbridge with past calibration date
+- Edge Case: Update facility with invalid operating hours
+- Edge Case: Toggle non-existent feature (expect 404)
+
+CHAINING:
+- Extract weighbridgeId from create weighbridge response for update/delete operations
+- Extract facilityId from create facility response for subsequent operations
+- Extract featureId from enabled features list for toggle operations
