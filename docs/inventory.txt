@@ -13,39 +13,101 @@ ENDPOINTS:
    Authentication: Required (Bearer Token)
    Response: Array of unitization configs
    Response Fields:
-   - unitId (string): Unique unit identifier
-   - unitType (string): Type of unitization
-   - capacity (number): Unit capacity
-   - status (string): Status
+      - unitId (string): Unique unit identifier
+      - unitType (string): Type of unitization
+      - capacity (number): Unit capacity
+      - status (string): Status
 
 2. POST /v1/hub/configurations/inventory/unitization
    Description: Create unitization configuration
    Authentication: Required (Bearer Token)
-   Request Body:
+   
+   Request Body Format:
    {
-     "unitType": "PALLET/CONTAINER/CAGE",
-     "capacity": 0,
-     "dimensions": {
-       "length": 0,
-       "width": 0,
-       "height": 0
-     }
+     "hub_config_id": 1080,
+     "lkp_inv_type_id": 3752,
+     "is_inv_exists": true,
+     "lkp_draft_active": "save_next",
+     "inv_details": [
+       {
+         "lkp_inv_sub_type_id": 4086,
+         "unique_ids": [
+           {
+             "from_id": "B123456789012",
+             "to_id": "B123456789019",
+             "assign_date": "YYYY-MM-DD",
+             "end_date": "YYYY-MM-DD",
+             "count": 8
+           }
+         ],
+         "non_unique_ids": [
+           {
+             "count": 2,
+             "assign_date": "YYYY-MM-DD",
+             "end_date": "YYYY-MM-DD"
+           }
+         ]
+       }
+     ],
+     "inv_count": 10
    }
+   
+   FIELD RULES:
+   - lkp_inv_type_id: MUST always be 3752 for this API
+   - hub_config_id: Hub configuration identifier
+   - is_inv_exists: Boolean flag
+   - lkp_draft_active: Status flag ("save_next")
+   - inv_count: MUST equal SUM of all unique + non-unique counts
+   
+   inv_details Rules:
+   - Each item represents one container type
+   - Allowed lkp_inv_sub_type_id values ONLY:
+     * 4086 - pallet
+     * 3751 - foldable box
+     * 3750 - mother bag
+     * 3749 - pvc box
+   - NO other IDs are valid
+   
+   unique_ids Array Rules:
+   - from_id and to_id format: <Single Uppercase Letter><12 Digits>
+     Example: B123456789012
+   - Count calculation:
+     * If from_id == to_id → count = 1
+     * If consecutive → count = (numeric_to_id - numeric_from_id + 1)
+     * Example: B123456789019 to B123456789020 → count = 2
+   - Global uniqueness: Every (from_id, to_id) pair MUST be unique across entire hub
+   - Date constraints:
+     * assign_date MUST be today's date
+     * end_date MUST NOT exceed today's date (today or earlier)
+   
+   non_unique_ids Array Rules:
+   - count: Any positive number
+   - Date constraints:
+     * assign_date MUST be today
+     * end_date MUST be today or earlier (never future)
+   
+   Overall Requirements:
+   - Only allowed container subtype IDs accepted
+   - All unique ID ranges MUST follow <Letter><12-digit> format
+   - All date rules strictly enforced
+   - No unique ID reuse anywhere in hub
+   - inv_count MUST match total of all counts
+   
    Status Codes:
-   - 201: Created successfully
-   - 400: Invalid data
+      - 201: Created successfully
+      - 400: Invalid data (wrong format, invalid IDs, date violations)
 
 3. PUT /v1/hub/configurations/inventory/unitization/{unitId}
    Description: Update unitization configuration
    Authentication: Required (Bearer Token)
    Path Parameters:
-   - unitId (string, required): Unit identifier
+      - unitId (string, required): Unit identifier
 
 4. DELETE /v1/hub/configurations/inventory/unitization/{unitId}
    Description: Delete unitization configuration
    Authentication: Required (Bearer Token)
    Path Parameters:
-   - unitId (string, required): Unit identifier
+      - unitId (string, required): Unit identifier
 
 5. GET /v1/hub/configurations/inventory/mhe
    Description: Get Material Handling Equipment configurations
@@ -56,12 +118,12 @@ ENDPOINTS:
    Description: Add new MHE
    Authentication: Required (Bearer Token)
    Request Body:
-   {
-     "equipmentType": "FORKLIFT/PALLET_JACK/CRANE",
-     "equipmentId": "string",
-     "capacity": 0,
-     "status": "ACTIVE"
-   }
+      {
+        "equipmentType": "FORKLIFT/PALLET_JACK/CRANE",
+        "equipmentId": "string",
+        "capacity": 0,
+        "status": "ACTIVE"
+      }
 
 7. PUT /v1/hub/configurations/inventory/mhe/{equipmentId}
    Description: Update MHE configuration
@@ -76,11 +138,11 @@ ENDPOINTS:
    Description: Register new electronic device
    Authentication: Required (Bearer Token)
    Request Body:
-   {
-     "deviceType": "SCANNER/TABLET/HANDHELD",
-     "deviceId": "string",
-     "assignedTo": "string"
-   }
+      {
+        "deviceType": "SCANNER/TABLET/HANDHELD",
+        "deviceId": "string",
+        "assignedTo": "string"
+      }
 
 10. DELETE /v1/hub/configurations/inventory/electronic-devices/{deviceId}
     Description: Remove electronic device
@@ -95,33 +157,44 @@ ENDPOINTS:
     Description: Add CHA configuration
     Authentication: Required (Bearer Token)
     Request Body:
-    {
-      "chaName": "string",
-      "chaCode": "string",
-      "contactInfo": {
-        "phone": "string",
-        "email": "string"
-      }
-    }
+       {
+         "chaName": "string",
+         "chaCode": "string",
+         "contactInfo": {
+           "phone": "string",
+           "email": "string"
+         }
+       }
 
 13. POST /v1/hub/configurations/inventory/cha/bulk-check
     Description: Perform bulk inventory check
     Authentication: Required (Bearer Token)
     Request Body:
-    {
-      "items": ["itemId1", "itemId2"]
-    }
+       {
+         "items": ["itemId1", "itemId2"]
+       }
     Response: Bulk check results
 
 TEST SCENARIOS:
-- Positive: Create unitization with valid dimensions
+- Positive: Create unitization with valid dimensions and allowed subtype IDs
+- Positive: Valid unique ID format with correct count calculation
+- Positive: Date fields set to today or past dates
+- Positive: inv_count matches sum of all counts
 - Positive: Get all MHE configurations
 - Positive: Register electronic device
 - Positive: Add CHA configuration
 - Positive: Perform bulk inventory check
-- Negative: Create unitization with negative capacity (expect 400)
+- Negative: Create unitization with lkp_inv_type_id != 3752 (expect 400)
+- Negative: Invalid lkp_inv_sub_type_id (not in allowed list) (expect 400)
+- Negative: Invalid unique ID format (expect 400)
+- Negative: from_id/to_id not matching <Letter><12-digit> pattern (expect 400)
+- Negative: assign_date not today (expect 400)
+- Negative: end_date in future (expect 400)
+- Negative: Duplicate unique ID range (expect 400)
+- Negative: inv_count mismatch with total counts (expect 400)
 - Negative: Update non-existent MHE (expect 404)
 - Negative: Delete non-existent device (expect 404)
+- Edge Case: count = 1 when from_id == to_id
 - Edge Case: Create unitization with zero dimensions
 - Edge Case: Bulk check with empty items array
 - Edge Case: Register device without assignment
