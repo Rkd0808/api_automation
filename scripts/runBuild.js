@@ -78,11 +78,9 @@ PLEASE GENERATE:
 5. Use BDD-style test descriptions
 6. Include proper assertions
 7. Handle errors appropriately
-8. Import ApiClient from '../utils/apiClient'
+8. Use CommonJS require: const { ApiClient } = require('../utils/apiClient');
 9. Use environment variables for BASE_URL and JWT_TOKEN
-
-Provide ONLY the JavaScript test code, no explanations.
-`;
+IMPORTANT: Provide ONLY pure JavaScript code with CommonJS syntax (require/module.exports). DO NOT wrap code in markdown blocks or backticks. Start directly with code.`;
 
     try {
       console.log('   Calling LLM...');
@@ -91,9 +89,10 @@ Provide ONLY the JavaScript test code, no explanations.
 
       // Clean up the generated code (remove markdown code blocks if present)
       let cleanCode = generatedCode;
-      if (cleanCode.includes('```JavaScript') || cleanCode.includes('```js')) {
-        cleanCode = cleanCode.replace(/```JavaScript\n?/g, '').replace(/```js\n?/g, '').replace(/```\n?/g, '');
-      }
+    if (cleanCode.includes('```')) {
+      // Remove all markdown code blocks
+      cleanCode = cleanCode.replace(/```(?:javascript|js)?\n?/gi, '').replace(/```\n?/g, '');
+    }      }
 
       // Save the generated test file
       const testFileName = `${specName}.spec.js`;
