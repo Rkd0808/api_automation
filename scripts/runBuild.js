@@ -81,7 +81,7 @@ PLEASE GENERATE:
 8. Import ApiClient from '../utils/apiClient'
 9. Use environment variables for BASE_URL and JWT_TOKEN
 
-Provide ONLY the TypeScript test code, no explanations.
+Provide ONLY the JavaScript test code, no explanations.
 `;
 
     try {
@@ -91,12 +91,12 @@ Provide ONLY the TypeScript test code, no explanations.
 
       // Clean up the generated code (remove markdown code blocks if present)
       let cleanCode = generatedCode;
-      if (cleanCode.includes('```typescript') || cleanCode.includes('```ts')) {
-        cleanCode = cleanCode.replace(/```typescript\n?/g, '').replace(/```ts\n?/g, '').replace(/```\n?/g, '');
+      if (cleanCode.includes('```JavaScript') || cleanCode.includes('```js')) {
+        cleanCode = cleanCode.replace(/```JavaScript\n?/g, '').replace(/```js\n?/g, '').replace(/```\n?/g, '');
       }
 
       // Save the generated test file
-      const testFileName = `${specName}.spec.ts`;
+      const testFileName = `${specName}.spec.js`;
       const testFilePath = path.join(generatedTestsDir, testFileName);
       fs.writeFileSync(testFilePath, cleanCode);
 
