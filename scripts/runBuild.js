@@ -92,8 +92,7 @@ IMPORTANT: Provide ONLY pure JavaScript code with CommonJS syntax (require/modul
     if (cleanCode.includes('```')) {
       // Remove all markdown code blocks
       cleanCode = cleanCode.replace(/```(?:javascript|js)?\n?/gi, '').replace(/```\n?/g, '');
-    }      }
-
+    }
       // Save the generated test file
       const testFileName = `${specName}.spec.js`;
       const testFilePath = path.join(generatedTestsDir, testFileName);
