@@ -71,9 +71,8 @@ CHAINING REQUIREMENTS:
 ${JSON.stringify(chain, null, 2)}
 
 PLEASE GENERATE:
-1. Playwright test cases using @playwright/test
-2. Achieve at least 80% endpoint coverage (positive, negative, and edge cases)
-3. Extract response fields as specified in chaining requirements
+FIRST LINE: const { test, expect } = require('@playwright/test');
+1. Use test.describe() and test() from @playwright/test (NOT plain describe/it)3. Extract response fields as specified in chaining requirements
 4. Use extracted fields as payloads for subsequent API calls
 5. Use BDD-style test descriptions
 6. Include proper assertions
@@ -87,6 +86,7 @@ IMPORTANT: Provide ONLY pure JavaScript code with CommonJS syntax (require/modul
       const response = await promptLLM(prompt);
       const generatedCode = response.data.choices[0].message.content;
 
+      
       // Clean up the generated code (remove markdown code blocks if present)
       let cleanCode = generatedCode;
     if (cleanCode.includes('```')) {
