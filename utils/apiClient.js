@@ -1,23 +1,20 @@
-import { request, APIRequestContext } from '@playwright/test';
+const { request } = require('@playwright/test');
 
-export class ApiClient {
-  private baseUrl: string;
-  private token: string;
-  private context: APIRequestContext | null = null;
-
-  constructor(baseUrl: string, token: string) {
+class ApiClient {
+  constructor(baseUrl, token) {
     this.baseUrl = baseUrl;
     this.token = token;
+    this.context = null;
   }
 
-  private getHeaders() {
+  getHeaders() {
     return {
       'Authorization': `Bearer ${this.token}`,
       'Content-Type': 'application/json'
     };
   }
 
-  async get(path: string, queryParams?: Record<string, any>) {
+  async get(path, queryParams) {
     const context = await request.newContext();
     let url = `${this.baseUrl}${path}`;
     
@@ -31,7 +28,7 @@ export class ApiClient {
     });
   }
 
-  async post(path: string, body: any) {
+  async post(path, body) {
     const context = await request.newContext();
     return context.post(`${this.baseUrl}${path}`, {
       headers: this.getHeaders(),
@@ -39,7 +36,7 @@ export class ApiClient {
     });
   }
 
-  async put(path: string, body: any) {
+  async put(path, body) {
     const context = await request.newContext();
     return context.put(`${this.baseUrl}${path}`, {
       headers: this.getHeaders(),
@@ -47,7 +44,7 @@ export class ApiClient {
     });
   }
 
-  async patch(path: string, body: any) {
+  async patch(path, body) {
     const context = await request.newContext();
     return context.patch(`${this.baseUrl}${path}`, {
       headers: this.getHeaders(),
@@ -55,10 +52,12 @@ export class ApiClient {
     });
   }
 
-  async delete(path: string) {
+  async delete(path) {
     const context = await request.newContext();
     return context.delete(`${this.baseUrl}${path}`, {
       headers: this.getHeaders()
     });
   }
 }
+
+module.exports = { ApiClient };
