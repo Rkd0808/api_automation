@@ -71,8 +71,10 @@ CHAINING REQUIREMENTS:
 ${JSON.stringify(chain, null, 2)}
 
 PLEASE GENERATE:
-FIRST LINE: const { test, expect } = require('@playwright/test');
-SECOND LINE: const client = new ApiClient(process.env.BASE_URL, process.env.JWT_TOKEN);
+FIRST LINE: require('dotenv').config();
+SECOND LINE: const { test, expect } = require('@playwright/test');
+THIRD LINE: const { ApiClient } = require('../utils/apiClient');
+FOURTH LINE: const client = new ApiClient(process.env.BASE_URL, process.env.JWT_TOKEN);
 1. Use test.describe() and test() from @playwright/test (NOT plain describe/it)3. Extract response fields as specified in chaining requirements
 4. Use extracted fields as payloads for subsequent API calls
 5. Use BDD-style test descriptions
