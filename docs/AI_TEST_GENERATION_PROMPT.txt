@@ -109,6 +109,10 @@ STRICT REQUIREMENTS
    - response.ok()
    - response.headers()
 8. DO NOT use: response.request(), test.chain(), test.sequence()
+9. DO NOT try to verify request headers in tests - response.headers() returns RESPONSE headers, NOT request headers
+10. DO NOT add console.log or expect statements for headers['userid'] - headers are automatically added by ApiClient
+11. NEVER include lines like: expect(headers['userid']).toBe(process.env.USER_ID) - this will ALWAYS fail
+12. Focus ONLY on testing response data and status codes - header verification happens at the ApiClient level
 
 ========================================
 VALIDATION CHECKLIST
