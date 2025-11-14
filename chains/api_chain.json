@@ -1,9 +1,15 @@
 {
-  "branch": {
-    "next": "hcm_operations",
-    "extract": ["branchId"],
-    "inject_into": "hcm_operations.branchId",
-    "saveToFile": "data/extracted_data.json",
+  "executionOrder": [
+    "01_get_branch_configurations",
+    "02_create_or_update_basic_hub_configuration",
+    "03_upload_basic_layout_config",
+    "04_create_buildings_shutters_docks_config",
+    "05_create_hub_inventory_unitization"
+  ],
+  "01_get_branch_configurations": {
+    "api": "branch",
+    "endpoint": "/v1/hub/configurations/branches",
+    "method": "GET",
     "extractFields": [
       {
         "field": "branchId",
@@ -13,14 +19,15 @@
         "field": "branchName",
         "from": "response[0].branchName"
       }
-    ]
+    ],
+    "saveToFile": "data/extracted_data.json",
+    "nextStep": "02_create_or_update_basic_hub_configuration"
   },
-  "hub_landing": {
+  "02_create_or_update_basic_hub_configuration": {
+    "api": "hub_landing",
+    "endpoint": "/v1/hub/configurations/hub-landing/basic-config",
+    "method": "POST",
     "readFromFile": "data/extracted_data.json",
-    "useFields": {
-      "branchId": "$.branchId",
-      "branchName": "$.branchName"
-    },
     "payloadTemplate": {
       "basicConfigId": null,
       "branchId": "{{branchId}}",
@@ -30,11 +37,73 @@
       "basicLkpDraftActive": "SAVE_NEXT",
       "status": true,
       "future": false
-    }
+    },
+    "extractFields": [
+      {
+        "field": "basicConfigId",
+        "from": "response.basicConfigId"
+      },
+      {
+        "field": "hubId",
+        "from": "response.hubId"
+      }
+    ],
+    "appendToFile": "data/extracted_data.json",
+    "nextStep": "03_upload_basic_layout_config"
   },
-  "hcm_operations": {
-    "next": "inventory",
-    "extract": ["operationId"],
-    "inject_into": "inventory.operationId"
+  "03_upload_basic_layout_config": {
+    "api": "hub_landing",
+    "endpoint": "/v1/hub/configurations/hub-landing/layout",
+    "method": "POST",
+    "readFromFile": "data/extracted_data.json",
+    "payloadTemplate": {
+      "basicConfigId": "{{basicConfigId}}",
+      "hubId": "{{hubId}}",
+      "layoutType": "BASIC",
+      "layoutConfig": {}
+    },
+    "extractFields": [
+      {
+        "field": "layoutId",
+        "from": "response.layoutId"
+      }
+    ],
+    "appendToFile": "data/extracted_data.json",
+    "nextStep": "04_create_buildings_shutters_docks_config"
+  },
+  "04_create_buildings_shutters_docks_config": {
+    "api": "hub_landing",
+    "endpoint": "/v1/hub/configurations/hub-landing/buildings",
+    "method": "POST",
+    "readFromFile": "data/extracted_data.json",
+    "payloadTemplate": {
+      "hubId": "{{hubId}}",
+      "layoutId": "{{layoutId}}",
+      "buildingName": "Building 1",
+      "buildingType": "WAREHOUSE",
+      "floors": 1,
+      "area": 1000
+    },
+    "extractFields": [
+      {
+        "field": "buildingId",
+        "from": "response.buildingId"
+      }
+    ],
+    "appendToFile": "data/extracted_data.json",
+    "nextStep": "05_create_hub_inventory_unitization"
+  },
+  "05_create_hub_inventory_unitization": {
+    "api": "inventory",
+    "endpoint": "/v1/hub/configurations/inventory",
+    "method": "POST",
+    "readFromFile": "data/extracted_data.json",
+    "payloadTemplate": {
+      "hubId": "{{hubId}}",
+      "buildingId": "{{buildingId}}",
+      "inventoryType": "UNITIZATION",
+      "capacity": 1000
+    },
+    "nextStep": null
   }
 }
