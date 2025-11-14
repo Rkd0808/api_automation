@@ -98,7 +98,15 @@ FOURTH LINE: const client = new ApiClient(process.env.BASE_URL, process.env.JWT_
 5. Use BDD-style test descriptions
 6. Include proper assertions
 7. Handle errors appropriately
-8. Use CommonJS require: const { ApiClient } = require('../utils/apiClient');
+
+8. CRITICAL CONSTRAINTS FOR CODE GENERATION:
+   - DO NOT use response.request() - this method does NOT exist in Playwright API
+   - DO NOT try to inspect or log request headers in test code - headers are automatically added by ApiClient (utils/apiClient.js)
+   - ONLY use valid Playwright response methods: response.status(), response.json(), response.text(), response.ok(), response.headers()
+   - DO NOT include console.log statements that try to access response.request()
+   - Focus test assertions ONLY on response data and status codes
+   - All request headers (including userid) are handled automatically by ApiClient - no need to verify them in tests
+9. Use CommonJS require: const { ApiClient } = require('../utils/apiClient');
 IMPORTANT: Provide ONLY pure JavaScript code with CommonJS syntax (require/module.exports). DO NOT wrap code in markdown blocks or backticks. Start directly with code.`;
 
     try {
