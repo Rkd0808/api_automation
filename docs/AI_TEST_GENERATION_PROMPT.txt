@@ -115,6 +115,60 @@ STRICT REQUIREMENTS
 12. Focus ONLY on testing response data and status codes - header verification happens at the ApiClient level
 
 ========================================
+API CHAINING AND DATA EXTRACTION
+========================================
+
+When API specifications include CHAINING sections:
+
+1. DATA EXTRACTION TO JSON FILE:
+   - If API spec mentions "Extract ... and save to JSON file"
+   - Use fs.writeFileSync to save extracted data
+   - Example:
+   
+   const fs = require('fs');
+   const path = require('path');
+   
+   test('Extract and save data', async () => {
+     const response = await client.get('/v1/hub/configurations/branches');
+     const branches = await response.json();
+     const extractedData = {
+       branchId: branches[0].branchId,
+       branchName: branches[0].branchName
+     };
+     const dataPath = path.join(__dirname, '../data/extracted_data.json');
+     fs.writeFileSync(dataPath, JSON.stringify(extractedData, null, 2));
+   });
+
+2. USING EXTRACTED DATA FROM JSON FILE:
+   - If API spec mentions "Use extracted ... from JSON file"
+   - Use fs.readFileSync to read extracted data
+   - Example:
+   
+   test('Use extracted data in payload', async () => {
+     const dataPath = path.join(__dirname, '../data/extracted_data.json');
+     const extractedData = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
+     const payload = {
+       basicConfigId: null,
+       branchId: extractedData.branchId,
+       branchName: extractedData.branchName,
+       startDate: "2025-11-11",
+       endDate: "",
+       basicLkpDraftActive: "SAVE_NEXT",
+       status: true,
+       future: false
+     };
+     const response = await client.post('/v1/hub/configurations/hub-landing', payload);
+     expect(response.status()).toBe(201);
+   });
+
+3. CHAINING REQUIREMENTS:
+   - Always check API spec CHAINING section for extraction requirements
+   - Extract IDs or data as specified in the CHAINING section
+   - Store in variables for immediate use OR save to JSON for cross-API usage
+   - Use appropriate file paths: data/extracted_data.json
+
+
+========================================
 VALIDATION CHECKLIST
 ========================================
 Before generating, verify:
