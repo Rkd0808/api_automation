@@ -2,7 +2,35 @@
   "branch": {
     "next": "hcm_operations",
     "extract": ["branchId"],
-    "inject_into": "hcm_operations.branchId"
+    "inject_into": "hcm_operations.branchId",
+    "saveToFile": "data/extracted_data.json",
+    "extractFields": [
+      {
+        "field": "branchId",
+        "from": "response[0].branchId"
+      },
+      {
+        "field": "branchName",
+        "from": "response[0].branchName"
+      }
+    ]
+  },
+  "hub_landing": {
+    "readFromFile": "data/extracted_data.json",
+    "useFields": {
+      "branchId": "$.branchId",
+      "branchName": "$.branchName"
+    },
+    "payloadTemplate": {
+      "basicConfigId": null,
+      "branchId": "{{branchId}}",
+      "branchName": "{{branchName}}",
+      "startDate": "2025-11-11",
+      "endDate": "",
+      "basicLkpDraftActive": "SAVE_NEXT",
+      "status": true,
+      "future": false
+    }
   },
   "hcm_operations": {
     "next": "inventory",
