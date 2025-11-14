@@ -12,7 +12,7 @@ function loadAPISpecs() {
     return [];
   }
 
-  const files = fs.readdirSync(docsDir).filter(file => file.endsWith('.txt') && file !== 'COMMON_HEADERS.txt');  
+  const files = fs.readdirSync(docsDir).filter(file => file.endsWith('.txt') && file !== 'COMMON_HEADERS.txt' && file !== 'AI_TEST_GENERATION_PROMPT.txt'); 
   return files.map(file => ({
     name: file,
     contents: fs.readFileSync(path.join(docsDir, file), 'utf8')
@@ -33,15 +33,23 @@ function loadAPIChain() {
 
 // Load common headers documentation
 function loadCommonHeaders() {
-    const commonHeadersFile = path.join(__dirname, '..', 'docs', 'COMMON_HEADERS.txt');
-
-    if (!fs.existsSync(commonHeadersFile)) {
-          console.warn('COMMON_HEADERS.txt not found. Header instructions will not be included.');
-          return '';
-        }
-
-    return fs.readFileSync(commonHeadersFile, 'utf8');
+  const commonHeadersFile = path.join(__dirname, '..', 'docs', 'COMMON_HEADERS.txt');
+  if (!fs.existsSync(commonHeadersFile)) {
+    console.warn('COMMON_HEADERS.txt not found. Header instructions will not be included.');
+    return '';
   }
+  return fs.readFileSync(commonHeadersFile, 'utf8');
+}
+
+// Load AI prompt template
+function loadPromptTemplate() {
+  const promptFile = path.join(__dirname, '..', 'docs', 'AI_TEST_GENERATION_PROMPT.txt');
+  if (!fs.existsSync(promptFile)) {
+    console.warn('AI_TEST_GENERATION_PROMPT.txt not found. Using default prompt.');
+    return '';
+  }
+  return fs.readFileSync(promptFile, 'utf8');
+}
 
 // Generate test cases using LLM
 async function generateTests() {
@@ -56,9 +64,10 @@ async function generateTests() {
   console.log(`Found ${apiSpecs.length} API specification(s)`);
   console.log('Loading chaining configuration...');
   const apiChain = loadAPIChain();
-
-    console.log('Loading common headers documentation...');
-    const commonHeaders = loadCommonHeaders();
+  console.log('Loading common headers documentation...');
+  const commonHeaders = loadCommonHeaders();
+  console.log('Loading AI prompt template...');
+  const promptTemplate = loadPromptTemplate();
 
   // Ensure generated-tests directory exists
   const generatedTestsDir = path.join(__dirname, '..', 'generated-tests');
@@ -71,12 +80,12 @@ async function generateTests() {
   for (const spec of apiSpecs) {
     const specName = spec.name.replace('.txt', '');
     const chain = apiChain[specName] || {};
-
-    console.log(`\n Processing: ${spec.name}`);
+    
+    console.log(`\n  Processing: ${spec.name}`);
 
     // Construct prompt for LLM
     const prompt = `
-You are an expert API test automation engineer. Given the following API specification and chaining requirements, generate comprehensive Playwright test cases.
+${promptTemplate}
 
 API SPECIFICATION:
 ${spec.contents}
@@ -86,46 +95,25 @@ ${JSON.stringify(chain, null, 2)}
 
 COMMON HEADERS (MANDATORY FOR ALL REQUESTS):
 ${commonHeaders}
-
-
-PLEASE GENERATE:
-FIRST LINE: require('dotenv').config();
-SECOND LINE: const { test, expect } = require('@playwright/test');
-THIRD LINE: const { ApiClient } = require('../utils/apiClient');
-FOURTH LINE: const client = new ApiClient(process.env.BASE_URL, process.env.JWT_TOKEN, process.env.USER_ID);
-1. Use test.describe() and test() from @playwright/test (NOT plain describe/it)3. Extract response fields as specified in chaining requirements
-4. Use extracted fields as payloads for subsequent API calls
-5. Use BDD-style test descriptions
-6. Include proper assertions
-7. Handle errors appropriately
-
-8. CRITICAL CONSTRAINTS FOR CODE GENERATION:
-   - DO NOT use response.request() - this method does NOT exist in Playwright API
-   - DO NOT try to inspect or log request headers in test code - headers are automatically added by ApiClient (utils/apiClient.js)
-   - ONLY use valid Playwright response methods: response.status(), response.json(), response.text(), response.ok(), response.headers()
-   - DO NOT include console.log statements that try to access response.request()
-   - Focus test assertions ONLY on response data and status codes
-   - All request headers (including userid) are handled automatically by ApiClient - no need to verify them in tests
-9. Use CommonJS require: const { ApiClient } = require('../utils/apiClient');
-IMPORTANT: Provide ONLY pure JavaScript code with CommonJS syntax (require/module.exports). DO NOT wrap code in markdown blocks or backticks. Start directly with code.`;
+`;
 
     try {
       console.log('   Calling LLM...');
       const response = await promptLLM(prompt);
       const generatedCode = response.data.choices[0].message.content;
-
       
       // Clean up the generated code (remove markdown code blocks if present)
       let cleanCode = generatedCode;
-    if (cleanCode.includes('```')) {
-      // Remove all markdown code blocks
-      cleanCode = cleanCode.replace(/```(?:javascript|js)?\n?/gi, '').replace(/```\n?/g, '');
-    }
+      if (cleanCode.includes('```')) {
+        // Remove all markdown code blocks
+        cleanCode = cleanCode.replace(/```(?:javascript|js)?\n?/gi, '').replace(/```\n?/g, '');
+      }
+
       // Save the generated test file
       const testFileName = `${specName}.spec.js`;
       const testFilePath = path.join(generatedTestsDir, testFileName);
       fs.writeFileSync(testFilePath, cleanCode);
-
+      
       console.log(`   ✓ Generated: ${testFileName}`);
     } catch (error) {
       console.error(`   ✗ Error generating tests for ${spec.name}:`, error.message);
