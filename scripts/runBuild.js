@@ -12,8 +12,7 @@ function loadAPISpecs() {
     return [];
   }
 
-  const files = fs.readdirSync(docsDir).filter(file => file.endsWith('.txt'));
-  
+  const files = fs.readdirSync(docsDir).filter(file => file.endsWith('.txt') && file !== 'COMMON_HEADERS.txt');  
   return files.map(file => ({
     name: file,
     contents: fs.readFileSync(path.join(docsDir, file), 'utf8')
@@ -32,6 +31,18 @@ function loadAPIChain() {
   return JSON.parse(fs.readFileSync(chainFile, 'utf8'));
 }
 
+// Load common headers documentation
+function loadCommonHeaders() {
+    const commonHeadersFile = path.join(__dirname, '..', 'docs', 'COMMON_HEADERS.txt');
+
+    if (!fs.existsSync(commonHeadersFile)) {
+          console.warn('COMMON_HEADERS.txt not found. Header instructions will not be included.');
+          return '';
+        }
+
+    return fs.readFileSync(commonHeadersFile, 'utf8');
+  }
+
 // Generate test cases using LLM
 async function generateTests() {
   console.log('Loading API specifications...');
@@ -45,6 +56,9 @@ async function generateTests() {
   console.log(`Found ${apiSpecs.length} API specification(s)`);
   console.log('Loading chaining configuration...');
   const apiChain = loadAPIChain();
+
+    console.log('Loading common headers documentation...');
+    const commonHeaders = loadCommonHeaders();
 
   // Ensure generated-tests directory exists
   const generatedTestsDir = path.join(__dirname, '..', 'generated-tests');
@@ -69,6 +83,10 @@ ${spec.contents}
 
 CHAINING REQUIREMENTS:
 ${JSON.stringify(chain, null, 2)}
+
+COMMON HEADERS (MANDATORY FOR ALL REQUESTS):
+${commonHeaders}
+
 
 PLEASE GENERATE:
 FIRST LINE: require('dotenv').config();
