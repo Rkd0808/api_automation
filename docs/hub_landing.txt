@@ -145,3 +145,4 @@ CHAINING:
 - Extract buildingId for building updates
 - Extract bayId for bay configuration updates
 - Use hubId in related API calls
+- Use extracted branchId and branchName from branch API (data/extracted_data.json) for POST requests
