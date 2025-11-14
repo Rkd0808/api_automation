@@ -1,0 +1,128 @@
+========================================
+PLAYWRIGHT API TEST GENERATION PROMPT
+========================================
+
+You are an expert Playwright API test automation engineer. Generate comprehensive test cases following this EXACT structure.
+
+========================================
+MANDATORY: COPY THESE 4 LINES EXACTLY
+========================================
+require('dotenv').config();
+const { test, expect } = require('@playwright/test');
+const { ApiClient } = require('../utils/apiClient');
+const client = new ApiClient(process.env.BASE_URL, process.env.JWT_TOKEN, process.env.USER_ID);
+
+========================================
+PLAYWRIGHT TEST SYNTAX (MUST FOLLOW EXACTLY)
+========================================
+✅ CORRECT test.describe syntax:
+test.describe('Test Suite Name', () => {
+  // tests go here
+});
+
+❌ WRONG - Missing callback:
+test.describe('Test Suite Name');  // ❌ ERROR
+
+✅ CORRECT test syntax:
+test('Test description', async () => {
+  // test code
+});
+
+❌ WRONG - Invalid methods:
+test.chain()   // ❌ Does NOT exist
+test.sequence() // ❌ Does NOT exist  
+test.it()      // ❌ Does NOT exist
+
+========================================
+APICLIENT METHODS (USE LOWERCASE ONLY)
+========================================
+✅ CORRECT (lowercase):
+await client.get('/path')
+await client.post('/path', body)
+await client.put('/path', body)
+await client.patch('/path', body)
+await client.delete('/path')
+
+❌ WRONG (uppercase):
+await client.GET()   // ❌ Does NOT exist
+await client.POST()  // ❌ Does NOT exist
+
+========================================
+COMPLETE WORKING EXAMPLE (COPY THIS PATTERN)
+========================================
+require('dotenv').config();
+const { test, expect } = require('@playwright/test');
+const { ApiClient } = require('../utils/apiClient');
+const client = new ApiClient(process.env.BASE_URL, process.env.JWT_TOKEN, process.env.USER_ID);
+
+test.describe('Branch API Tests', () => {
+  let branchId;
+
+  test('GET all branches - validate response', async () => {
+    const response = await client.get('/v1/hub/configurations/branches');
+    expect(response.status()).toBe(200);
+    const branches = await response.json();
+    expect(Array.isArray(branches)).toBeTruthy();
+    expect(branches.length).toBeGreaterThan(0);
+    branchId = branches[0].branchId;
+  });
+
+  test('GET branch by ID - verify single record', async () => {
+    const response = await client.get(`/v1/hub/configurations/branches/${branchId}`);
+    expect(response.status()).toBe(200);
+    const branch = await response.json();
+    expect(branch.branchId).toBe(branchId);
+    expect(branch.branchName).toBeDefined();
+  });
+
+  test('POST create branch - validate creation', async () => {
+    const newBranch = {
+      branchName: 'Test Branch',
+      branchCode: 'TST001',
+      status: 'active'
+    };
+    const response = await client.post('/v1/hub/configurations/branches', newBranch);
+    expect(response.status()).toBe(201);
+    const created = await response.json();
+    expect(created.branchId).toBeDefined();
+  });
+
+  test('Negative: GET invalid ID - expect 404', async () => {
+    const response = await client.get('/v1/hub/configurations/branches/INVALID123');
+    expect(response.status()).toBe(404);
+  });
+});
+
+========================================
+STRICT REQUIREMENTS
+========================================
+1. Always use test.describe('Name', () => { }) with callback
+2. Always use test('Name', async () => { }) with callback
+3. Use ONLY client.get/post/put/patch/delete (lowercase)
+4. Extract IDs into variables for chaining
+5. Include minimum 80% endpoint coverage
+6. Add 2+ negative test cases per API spec
+7. Use valid Playwright response methods ONLY:
+   - response.status()
+   - response.json()
+   - response.text()
+   - response.ok()
+   - response.headers()
+8. DO NOT use: response.request(), test.chain(), test.sequence()
+
+========================================
+VALIDATION CHECKLIST
+========================================
+Before generating, verify:
+□ test.describe has callback function () => { }
+□ All client methods are lowercase
+□ No test.chain() or other invalid methods
+□ All tests have async () => { } callbacks
+□ Proper variable extraction for chaining
+□ Negative test cases included
+
+========================================
+IMPORTANT
+========================================
+Output ONLY JavaScript code. NO markdown blocks, NO backticks, NO explanations.
+Start with: require('dotenv').config();
