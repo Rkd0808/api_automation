@@ -1,0 +1,115 @@
+========================================
+COMMON API HEADERS SPECIFICATION
+========================================
+
+IMPORTANT: ALL API REQUESTS MUST INCLUDE THESE HEADERS
+
+This document specifies the mandatory headers required for all API requests across the entire application.
+The AI test generator should automatically include these headers in all generated test cases.
+
+========================================
+MANDATORY HEADERS:
+========================================
+
+1. Authorization: Bearer Token
+   - Header Name: Authorization
+   - Format: Bearer {JWT_TOKEN}
+   - Source: process.env.JWT_TOKEN (from .env file)
+   - Description: JWT authentication token for API authorization
+   - Example: Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+   - Required: YES - All requests
+
+2. Content-Type: application/json
+   - Header Name: Content-Type
+   - Value: application/json
+   - Description: Indicates the request/response body format is JSON
+   - Required: YES - All requests with body (POST, PUT, PATCH)
+
+3. userid: User Identifier
+   - Header Name: userid
+   - Source: process.env.USER_ID (from .env file)
+   - Description: Unique identifier for the user making the request
+   - Format: String
+   - Example: userid: USR123456
+   - Required: YES - MANDATORY for ALL API requests (GET, POST, PUT, PATCH, DELETE)
+   - Purpose: Used for user tracking, authorization, and audit logging
+
+========================================
+IMPLEMENTATION IN APICLIENT:
+========================================
+
+The ApiClient class (utils/apiClient.js) automatically includes these headers:
+
+const apiClient = new ApiClient(
+  process.env.BASE_URL,
+  process.env.JWT_TOKEN,
+  process.env.USER_ID
+);
+
+Headers are set via getHeaders() method:
+```javascript
+getHeaders() {
+  return {
+    'Authorization': `Bearer ${this.token}`,
+    'Content-Type': 'application/json',
+    'userid': this.userId
+  };
+}
+```
+
+========================================
+AI TEST GENERATION INSTRUCTIONS:
+========================================
+
+When generating test cases, the AI should:
+
+1. ALWAYS initialize ApiClient with all three parameters:
+   - BASE_URL from process.env
+   - JWT_TOKEN from process.env
+   - USER_ID from process.env
+
+2. NEVER skip the userid parameter
+
+3. Include assertions to verify userid header is present:
+   ```javascript
+   const headers = response.request().headers();
+   expect(headers['userid']).toBeDefined();
+   expect(headers['userid']).toBe(process.env.USER_ID);
+   ```
+
+4. Add console logs for debugging:
+   ```javascript
+   console.log('Request Headers:', headers);
+   ```
+
+========================================
+ENVIRONMENT VARIABLES SETUP:
+========================================
+
+Create a .env file with:
+```
+BASE_URL=https://your-api-gateway.amazonaws.com/qa/hcmservice/v1
+JWT_TOKEN=your_jwt_token_here
+USER_ID=your_user_id_here
+```
+
+========================================
+ERROR HANDLING:
+========================================
+
+Missing userid header will result in:
+- HTTP 400: Bad Request (if userid validation is enforced)
+- HTTP 401: Unauthorized (if userid is used for authorization)
+- Audit log failures
+
+========================================
+NOTES FOR ALL API DOCUMENTATION FILES:
+========================================
+
+All API specification files (branch.txt, hcm_operations.txt, etc.) should:
+1. Reference this COMMON_HEADERS.txt file
+2. Include "REQUIRED HEADERS FOR ALL REQUESTS" section
+3. List all three mandatory headers
+4. Emphasize that userid is MANDATORY
+
+========================================
