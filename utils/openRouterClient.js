@@ -3,7 +3,7 @@ require('dotenv').config();
 
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
-const MODEL = 'nvidia/llama-3.1-nemotron-70b-instruct';
+const MODEL = 'nvidia/nemotron-nano-9b-v2:free';
 
 /**
  * Send a prompt to the LLM and get a response
