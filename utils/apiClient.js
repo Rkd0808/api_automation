@@ -1,16 +1,18 @@
 const { request } = require('@playwright/test');
 
 class ApiClient {
-  constructor(baseUrl, token) {
+  constructor(baseUrl, token, userId) {
     this.baseUrl = baseUrl;
     this.token = token;
     this.context = null;
+        this.userId = userId;
   }
 
   getHeaders() {
     return {
       'Authorization': `Bearer ${this.token}`,
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+            'userid': this.userId
     };
   }
 
