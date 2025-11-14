@@ -76,4 +76,22 @@ TEST SCENARIOS:
 CHAINING:
 - Extract branchId from create/get response
 - Use branchId in subsequent update/delete operations
+
+DETAILED CHAINING SPECIFICATION:
+- Extract the FIRST branchId and branchName from GET /v1/hub/configurations/branches response
+- Save extracted data to JSON file: data/extracted_data.json
+- JSON structure: { "branchId": <value>, "branchName": <value> }
+- Use extracted values in hub_landing API POST request payload
+
+HUB_LANDING PAYLOAD TEMPLATE:
+{
+    "basicConfigId": null,
+    "branchId": <EXTRACTED_branchId_from_branch_API>,
+    "branchName": "<EXTRACTED_branchName_from_branch_API>",
+    "startDate": "2025-11-11",
+    "endDate": "",
+    "basicLkpDraftActive": "SAVE_NEXT",
+    "status": true,
+    "future": false
+}
 - Use branchId for pincode mapping creation
