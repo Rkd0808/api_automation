@@ -3,6 +3,11 @@ API SPECIFICATION: Branch API
 
 BASE PATH: /v1/hub/configurations/branches
 
+REQUIRED HEADERS FOR ALL REQUESTS:
+- Authorization: Bearer Token (JWT_TOKEN from .env)
+- Content-Type: application/json
+- userid: User ID (USER_ID from .env) - MANDATORY for all API requests
+
 DESCRIPTION:
 The Branch API provides endpoints to manage hub branch configurations including branch details, pincode mappings, master slabs, and branch types.
 
