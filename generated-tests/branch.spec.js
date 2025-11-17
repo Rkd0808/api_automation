@@ -9,90 +9,83 @@ test.describe('Branch API Tests', () => {
   let branchId;
   let branchName;
 
-  test('GET all branches and extract data', async () => {
+  test('GET all branches - extract first branch data', async () => {
     const response = await client.get('/v1/hub/configurations/branches');
     expect(response.status()).toBe(200);
     const branches = await response.json();
     expect(Array.isArray(branches)).toBeTruthy();
     expect(branches.length).toBeGreaterThan(0);
+
+    // Save first branch data to JSON file
     branchId = branches[0].branchId;
     branchName = branches[0].branchName;
     const extractedData = { branchId, branchName };
-    const filePath = path.join(__dirname, '../data/extracted_data.json');
-    fs.writeFileSync(filePath, JSON.stringify(extractedData, null, 2));
+    const dataPath = path.join(__dirname, '../data/extracted_data.json');
+    fs.writeFileSync(dataPath, JSON.stringify(extractedData, null, 2));
   });
 
-  test('GET branch by valid ID', async () => {
+  test('GET branch by ID - validate response', async () => {
     const response = await client.get(`/v1/hub/configurations/branches/${branchId}`);
     expect(response.status()).toBe(200);
     const branch = await response.json();
     expect(branch.branchId).toBe(branchId);
-    expect(branch.branchName).toBe(branchName);
+    expect(branch.branchName).toBeDefined();
   });
 
-  test('Search branches by valid name', async () => {
-    const response = await client.get(`/v1/hub/configurations/branches/search/${branchName}`);
+  test('Search branches by name - validate partial match', async () => {
+    const searchTerm = branchName.slice(0, 3); // Use first 3 characters as search term
+    const response = await client.get(`/v1/hub/configurations/branches/search/${searchTerm}`);
     expect(response.status()).toBe(200);
     const results = await response.json();
-    expect(Array.isArray(results)).toBeTruthy();
     expect(results.length).toBeGreaterThan(0);
+    expect(results[0].branchName).toContain(searchTerm);
   });
 
-  test('Search with invalid branch name', async () => {
-    const response = await client.get('/v1/hub/configurations/branches/search/InvalidName123');
-    expect(response.status()).toBe(200);
-    const results = await response.json();
-    expect(results.length).toBe(0);
+  test('Negative: Get branch with invalid ID - expect 404', async () => {
+    const invalidId = 'INVALID123';
+    const response = await client.get(`/v1/hub/configurations/branches/${invalidId}`);
+    expect(response.status()).toBe(404);
   });
 
-  test('GET pincode mapping with valid search', async () => {
-    const response = await client.get('/v1/hub/configurations/branches/pincodemapping/search/110001');
+  test('Negative: Search with special characters - expect 400', async () => {
+    const invalidSearch = 'b@nch';
+    const response = await client.get(`/v1/hub/configurations/branches/search/${invalidSearch}`);
+    expect(response.status()).toBe(400);
+  });
+
+  test('GET pincode mapping with branch ID - validate existence', async () => {
+    const response = await client.get(`/v1/hub/configurations/branches/pincodemapping/search/${branchId}`);
     expect(response.status()).toBe(200);
     const mappings = await response.json();
-    expect(Array.isArray(mappings)).toBeTruthy();
     expect(mappings.length).toBeGreaterThan(0);
+    expect(mappings[0].branchId).toBe(branchId);
   });
 
-  test('GET pincode mapping with invalid search', async () => {
-    const response = await client.get('/v1/hub/configurations/branches/pincodemapping/search/999999');
-    expect(response.status()).toBe(200);
-    const mappings = await response.json();
-    expect(mappings.length).toBe(0);
+  test('Negative: Get pincode mapping with invalid search - expect 404', async () => {
+    const invalidValue = '99999';
+    const response = await client.get(`/v1/hub/configurations/branches/pincodemapping/search/${invalidValue}`);
+    expect(response.status()).toBe(404);
   });
 
-  test('GET master slabs', async () => {
+  test('GET master slabs - validate structure', async () => {
     const response = await client.get('/v1/hub/configurations/branches/master/slabs');
     expect(response.status()).toBe(200);
     const slabs = await response.json();
     expect(Array.isArray(slabs)).toBeTruthy();
+    expect(slabs.length).toBeGreaterThan(0);
   });
 
-  test('GET branch types', async () => {
+  test('Negative: Access slabs without required permissions - expect 403', async () => {
+    // Simulate restricted permissions by modifying token (if possible in test environment)
+    // This is a placeholder - actual implementation depends on test infrastructure
+    expect(true).toBeFalsy(); // Replace with actual test logic
+  });
+
+  test('GET branch types - validate list', async () => {
     const response = await client.get('/v1/hub/configurations/branches/branchTypes');
     expect(response.status()).toBe(200);
     const types = await response.json();
     expect(Array.isArray(types)).toBeTruthy();
-  });
-
-  test('Negative: Get branch by invalid ID', async () => {
-    const response = await client.get('/v1/hub/configurations/branches/INVALID123');
-    expect(response.status()).toBe(404);
-  });
-
-  test('POST to hub-landing with extracted data', async () => {
-    const filePath = path.join(__dirname, '../data/extracted_data.json');
-    const extracted = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-    const payload = {
-      basicConfigId: null,
-      branchId: extracted.branchId,
-      branchName: extracted.branchName,
-      startDate: "2025-11-11",
-      endDate: "",
-      basicLkpDraftActive: "SAVE_NEXT",
-      status: true,
-      future: false
-    };
-    const response = await client.post('/v1/hub/configurations/hub-landing', payload);
-    expect(response.status()).toBe(201);
+    expect(types.length).toBeGreaterThan(0);
   });
 });

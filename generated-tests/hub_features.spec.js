@@ -3,117 +3,153 @@ const { test, expect } = require('@playwright/test');
 const { ApiClient } = require('../utils/apiClient');
 const client = new ApiClient(process.env.BASE_URL, process.env.JWT_TOKEN, process.env.USER_ID);
 
-test.describe('Hub Features API Tests', () => {
-  let weighbridgeId, facilityId, featureId;
-
-  test('GET all weighbridge configurations', async () => {
-    const response = await client.get('/weighbridge');
+test.describe('Hub Configuration Workflow', () => {
+  let branchId;
+  let baseConfigId;
+  
+  test('GET branches - validate available branches', async () => {
+    const response = await client.get('/v1/hub/configurations/branches');
     expect(response.status()).toBe(200);
-    const weighbridges = await response.json();
-    expect(Array.isArray(weighbridges.weighbridges)).toBeTruthy();
-    expect(weighbridges.weighbridges.length).toBeGreaterThan(0);
-    weighbridgeId = weighbridges.weighbridges[0].id;
+    const branches = await response.json();
+    expect(Array.isArray(branches)).toBeTruthy();
+    branchId = branches.find(b => b.status === 'active') || branches[0];
+    expect(branchId).toBeDefined();
   });
-
-  test('Create weighbridge with valid data', async () => {
-    const newWeighbridge = {
-      name: 'Test Weighbridge',
-      location: 'Warehouse A',
-      capacity: 100,
-      unit: 'tons',
-      isActive: true,
-      calibrationDate: new Date().toISOString().split('T')[0]
+  
+  test('POST create base config - validate creation', async () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const payload = {
+      branchId: branchId.branchId,
+      branchName: branchId.branchName,
+      startDate: tomorrow.toISOString().split('T')[0],
+      endDate: "",
+      basicLkpDraftActive: "SAVE_NEXT",
+      status: true
     };
-    const response = await client.post('/weighbridge', newWeighbridge);
+    const response = await client.post('/v1/hub/configurations/basic-configs', payload);
     expect(response.status()).toBe(201);
-    const created = await response.json();
-    expect(created.id).toBeDefined();
-    weighbridgeId = created.id;
+    baseConfigId = (await response.json()).basicConfigId || (await response.json()).hubConfigId;
+    expect(baseConfigId).toBeDefined();
   });
-
-  test('Negative: Create weighbridge with missing fields', async () => {
-    const invalidPayload = { name: 'Test' };
-    const response = await client.post('/weighbridge', invalidPayload);
+  
+  test('POST create layout basic - validate layout', async () => {
+    const fs = require('fs');
+    const path = require('path');
+    const dataPath = path.join(__dirname, '../data/extracted_data.json');
+    const extractedData = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
+    
+    const payload = {
+      layoutBasicId: "",
+      layoutLength: 100,
+      layoutBreadth: 200,
+      lkpDraftActive: "SAVE_NEXT",
+      lkpHubOrientationId: 3601,
+      branchSharingPremise: false,
+      sharingBranchResponseDTOList: []
+    };
+    
+    const response = await client.post(`/v1/hub/configurations/${baseConfigId}/layoutBasic`, payload);
+    expect(response.status()).toBe(201);
+    const layoutData = await response.json();
+    fs.writeFileSync(dataPath, JSON.stringify({ layoutId: layoutData.layoutBasicId }, null, 2));
+  });
+  
+  test('GET buildings - validate existing structure', async () => {
+    const response = await client.get(`/v1/hub/configurations/${baseConfigId}/layout/buildings?lkpDraftActive=DRAFT`);
+    expect(response.status()).toBe(200 || 404);
+    if (response.status() === 200) {
+      const buildings = await response.json();
+      fs.writeFileSync(dataPath, JSON.stringify({
+        existingBuildings: buildings,
+        shouldNullify: true
+      }, null, 2));
+    }
+  });
+  
+  test('POST create building - validate building creation', async () => {
+    const fs = require('fs');
+    const path = require('path');
+    const dataPath = path.join(__dirname, '../data/extracted_data.json');
+    const extractedData = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
+    
+    const buildingPayload = {
+      "lkpLineOfBusinessId": 3861,
+      "lkpShutterTypeId": 5,
+      "lkpOrientationId": "3601",
+      "lkpDimensionId": "3765",
+      "lkpDockTypeId": "3767",
+      "lkpDockSizeId": "3609",
+      "serviceId": "SVC001"
+    };
+    
+    if (extractedData.existingBuildings) {
+      buildingPayload.lkpLineOfBusinessId = extractedData.existingBuildings[0].lkpLineOfBusinessId;
+    }
+    
+    const response = await client.post(`/v1/hub/configurations/${baseConfigId}/layout/buildings`, buildingPayload);
+    expect(response.status()).toBe(201);
+    const buildingData = await response.json();
+    fs.writeFileSync(dataPath, JSON.stringify({
+      ...extractedData,
+      buildingId: buildingData.buildingId,
+      shouldNullify: false
+    }, null, 2));
+  });
+  
+  // ... (Additional tests for offices, inventory, operations, etc.) ...
+  
+  test('Negative: POST create branch with missing branchName', async () => {
+    const invalidPayload = {
+      branchId: "123",
+      startDate: tomorrow.toISOString().split('T')[0],
+      status: true
+    };
+    const response = await client.post('/v1/hub/configurations/branches', invalidPayload);
     expect(response.status()).toBe(400);
   });
-
-  test('GET weighbridge by ID', async () => {
-    const response = await client.get(`/weighbridge/${weighbridgeId}`);
-    expect(response.status()).toBe(200);
-    const weighbridge = await response.json();
-    expect(weighbridge.id).toBe(weighbridgeId);
-    expect(weighbridge.name).toBeDefined();
+  
+  test('Negative: POST create basic config with invalid date format', async () => {
+    const invalidPayload = {
+      branchId: branchId.branchId,
+      branchName: branchId.branchName,
+      startDate: "invalid-date",
+      endDate: "",
+      basicLkpDraftActive: "SAVE_NEXT",
+      status: true
+    };
+    const response = await client.post('/v1/hub/configurations/basic-configs', invalidPayload);
+    expect(response.status()).toBe(400);
   });
+  
+  // ... (Additional negative tests for all endpoints) ...
+});
 
-  test('Update weighbridge configuration', async () => {
-    const updateData = { name: 'Updated Test Weighbridge', capacity: 150 };
-    const response = await client.put(`/weighbridge/${weighbridgeId}`, updateData);
+// HUB Features Tests
+test.describe('HUB Features Tests', () => {
+  let featureId;
+  
+  test('GET enabled features - validate feature list', async () => {
+    const response = await client.get('/v1/hub/configurations/features/enabled');
+    expect(response.status()).toBe(200);
+    const features = await response.json();
+    featureId = features[0].featureId;
+    expect(featureId).toBeDefined();
+  });
+  
+  test('POST toggle feature - validate enable', async () => {
+    const payload = { featureId: featureId, isEnabled: true };
+    const response = await client.post('/v1/hub/configurations/features/toggle', payload);
     expect(response.status()).toBe(200);
     const updated = await response.json();
-    expect(updated.name).toBe('Updated Test Weighbridge');
+    expect(updated.isEnabled).toBe(true);
   });
-
-  test('Negative: Update non-existent weighbridge', async () => {
-    const response = await client.put('/weighbridge/INVALIDID', { name: 'Test' });
+  
+  test('Negative: POST toggle non-existent feature', async () => {
+    const invalidPayload = { featureId: "NON_EXISTENT", isEnabled: true };
+    const response = await client.post('/v1/hub/configurations/features/toggle', invalidPayload);
     expect(response.status()).toBe(404);
   });
-
-  test('DELETE weighbridge', async () => {
-    const response = await client.delete(`/weighbridge/${weighbridgeId}`);
-    expect(response.status()).toBe(200);
-    const result = await response.json();
-    expect(result.deletedId).toBe(weighbridgeId);
-  });
-
-  test('Negative: Delete active weighbridge (409)', async () => {
-    const response = await client.delete(`/weighbridge/${weighbridgeId}`);
-    expect(response.status()).toBe(409);
-  });
-
-  test('GET all facilities', async () => {
-    const response = await client.get('/facilities');
-    expect(response.status()).toBe(200);
-    const facilities = await response.json();
-    expect(Array.isArray(facilities.facilities)).toBeTruthy();
-    expect(facilities.facilities.length).toBeGreaterThan(0);
-    facilityId = facilities.facilities[0].id;
-  });
-
-  test('Create facility with valid data', async () => {
-    const newFacility = {
-      name: 'Test Facility',
-      type: 'Warehouse',
-      location: 'Main Campus',
-      capacity: 500,
-      isOperational: true,
-      operatingHours: { start: '08:00', end: '18:00' }
-    };
-    const response = await client.post('/facilities', newFacility);
-    expect(response.status()).toBe(201);
-    const created = await response.json();
-    expect(created.id).toBeDefined();
-    facilityId = created.id;
-  });
-
-  test('Negative: Create facility without authentication', async () => {
-    const response = await client.post('/facilities', { name: 'Test' });
-    expect(response.status()).toBe(401);
-  });
-
-  test('Feature toggle', async () => {
-    const response = await client.get('/features/enabled');
-    const features = await response.json();
-    featureId = features.features[0].featureId;
-    
-    const enableResponse = await client.post('/features/toggle', { featureId, isEnabled: true });
-    expect(enableResponse.status()).toBe(200);
-    
-    const disabledResponse = await client.post('/features/toggle', { featureId, isEnabled: false });
-    expect(disabledResponse.status()).toBe(200);
-  });
-
-  test('Negative: Toggle non-existent feature', async () => {
-    const response = await client.post('/features/toggle', { featureId: 'INVALID', isEnabled: true });
-    expect(response.status()).toBe(404);
-  });
+  
+  // ... (Negative tests for all features endpoints) ...
 });
