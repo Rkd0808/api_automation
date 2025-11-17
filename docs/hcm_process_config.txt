@@ -1,7 +1,7 @@
 API SPECIFICATION: HCM Process Config API
 ========================================
 
-BASE PATH: /v1/hub/configurations/hcm-process-config
+BASE PATH: https://2cdifi6676.execute-api.ap-south-1.amazonaws.com/qa/hcmservice
 
 DESCRIPTION:
 The HCM Process Config API manages process configuration settings including vehicle conditions, cut-off thresholds, and basic HCM process configurations.

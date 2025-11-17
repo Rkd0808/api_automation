@@ -15,8 +15,8 @@ playwright-report/
 playwright/.cache/
 
 # Generated tests
-generated-tests/*.spec.ts
-generated-tests/*.spec.js
+# generated-tests/*.spec.ts
+# generated-tests/*.spec.js
 
 # IDE
 .idea/

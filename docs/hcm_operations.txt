@@ -1,7 +1,7 @@
 API SPECIFICATION: HCM Operations API
 ========================================
 
-BASE PATH: /v1/hub/configurations/hcm-operations
+BASE PATH: https://2cdifi6676.execute-api.ap-south-1.amazonaws.com/qa/hcmservice
 
 DESCRIPTION:
 The HCM Operations API manages hub configuration management operations including stock transfers, roles, general configurations, and cross-docking operations.

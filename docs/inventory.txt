@@ -1,7 +1,7 @@
 API SPECIFICATION: Inventory Management API
 ========================================
 
-BASE PATH: /v1/hub/configurations/inventory
+BASE PATH: https://2cdifi6676.execute-api.ap-south-1.amazonaws.com/qa/hcmservice
 
 DESCRIPTION:
 The Inventory Management API handles inventory configurations including unitization, MHE (Material Handling Equipment), electronic devices, and CHA (Customs House Agent) management.

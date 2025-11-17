@@ -1,6 +1,6 @@
 HUB FEATURES API SPECIFICATION
 
-Base URL: /api/hub-features
+Base URL: https://2cdifi6676.execute-api.ap-south-1.amazonaws.com/qa/hcmservice
 
 ENDPOINTS:
 

@@ -1,7 +1,7 @@
 API SPECIFICATION: Hub Landing & Layout API
 ========================================
 
-BASE PATH: /v1/hub/configurations/hub-landing
+BASE PATH: https://2cdifi6676.execute-api.ap-south-1.amazonaws.com/qa/hcmservice
 
 DESCRIPTION:
 The Hub Landing & Layout API manages hub landing configurations including basic configs, version data, gates, buildings, bays, and office layouts.
