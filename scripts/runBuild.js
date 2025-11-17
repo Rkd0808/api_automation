@@ -12,7 +12,12 @@ function loadAPISpecs() {
     return [];
   }
 
-  const files = fs.readdirSync(docsDir).filter(file => file.endsWith('.txt') && file !== 'COMMON_HEADERS.txt' && file !== 'AI_TEST_GENERATION_PROMPT.txt'); 
+  const files = fs.readdirSync(docsDir).filter(file => 
+    file.endsWith('.txt') && 
+    file !== 'COMMON_HEADERS.txt' && 
+    file !== 'AI_TEST_GENERATION_PROMPT.txt'
+  ); 
+
   return files.map(file => ({
     name: file,
     contents: fs.readFileSync(path.join(docsDir, file), 'utf8')
@@ -51,6 +56,16 @@ function loadPromptTemplate() {
   return fs.readFileSync(promptFile, 'utf8');
 }
 
+// Load hub configuration workflow documentation
+function loadHubConfigWorkflow() {
+  const workflowFile = path.join(__dirname, '..', 'docs', 'hub-config-documentation.md');
+  if (!fs.existsSync(workflowFile)) {
+    console.warn('hub-config-documentation.md not found. Workflow order will not be enforced.');
+    return '';
+  }
+  return fs.readFileSync(workflowFile, 'utf8');
+}
+
 // Generate test cases using LLM
 async function generateTests() {
   console.log('Loading API specifications...');
@@ -62,12 +77,18 @@ async function generateTests() {
   }
 
   console.log(`Found ${apiSpecs.length} API specification(s)`);
+
   console.log('Loading chaining configuration...');
   const apiChain = loadAPIChain();
+
   console.log('Loading common headers documentation...');
   const commonHeaders = loadCommonHeaders();
+
   console.log('Loading AI prompt template...');
   const promptTemplate = loadPromptTemplate();
+
+  console.log('Loading hub configuration workflow documentation...');
+  const hubConfigWorkflow = loadHubConfigWorkflow();
 
   // Ensure generated-tests directory exists
   const generatedTestsDir = path.join(__dirname, '..', 'generated-tests');
@@ -87,12 +108,24 @@ async function generateTests() {
     const prompt = `
 ${promptTemplate}
 
+========================================
+API WORKFLOW EXECUTION ORDER (CRITICAL)
+========================================
+
+The following Hub Configuration workflow MUST be followed for proper API sequencing.
+Each API depends on data from previous steps. Generate tests that respect this order:
+
+${hubConfigWorkflow}
+
+========================================
 API SPECIFICATION:
 ${spec.contents}
 
+========================================
 CHAINING REQUIREMENTS:
 ${JSON.stringify(chain, null, 2)}
 
+========================================
 COMMON HEADERS (MANDATORY FOR ALL REQUESTS):
 ${commonHeaders}
 `;
